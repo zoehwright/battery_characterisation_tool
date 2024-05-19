@@ -4,7 +4,7 @@
 
 In order to use this package firstly clone the repository with:
 
-`git clone https://github.com/zoehwright/echem_code.git`
+`git clone https://github.com/zoehwright/battery_characterisation_tool`
 
 Next, in the terminal/powershell, navigate to the echem code file path and run:
 
