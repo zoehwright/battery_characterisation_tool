@@ -1,4 +1,4 @@
-# How to use Echem Plotter
+# How to use the Battery Characterisation Tool
 
 ## Get Started
 
