@@ -101,7 +101,7 @@ class CapacityFadePlotting:
         ax2.tick_params(axis='y', labelsize=10)
         ax1.set_xlim(self.xlim[0], self.xlim[1])
         ax1.set_ylim(self.ylim[0], self.ylim[1])
-        ax2.set_ylim(0, 100)
+        ax2.set_ylim(0, 105)
 
     def _get_file_list(self) -> list:
         """

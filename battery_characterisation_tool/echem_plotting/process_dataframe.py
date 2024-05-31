@@ -7,6 +7,23 @@ class ProcessDataframe:
     def __init__(self):
         pass
 
+    def check_file_header_present(self, 
+                          file_path) -> int:
+        if file_path.endswith(".txt"):
+            with open(file_path, 'r') as file:
+                # Read the first few lines to check for the specific header
+                lines = file.readlines()
+            # Define the header lines to check for
+            header_lines = ["EC-Lab ASCII FILE\n"]
+
+            # Check if the file starts with the specified header
+            if lines[:1] == header_lines: 
+                return 3
+            else:
+                return 0
+        else:
+            return 0
+
     def process_voltage_capacity_df(self,
                                     file_path,
                                     active_mass) -> pd.DataFrame:
@@ -31,8 +48,12 @@ class ProcessDataframe:
             #Calculate Specific Capacity Column
             df['Specific Capacity mAh/g'] = df['Capacity/mA.h']/active_mass
 
-            return df
+            #Remove ocv points (when external current =0)
+            #df = df[df["I/mA"] != 0]
+            df["charge_discharge"] = np.sign(df["I/mA"])
 
+            return df
+    
     def process_capacity_fade_df(self,
                                 file_path,
                                 active_mass) -> pd.DataFrame:
