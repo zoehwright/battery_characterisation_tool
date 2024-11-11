@@ -1,7 +1,8 @@
-import pandas as pd
+####import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 import matplotlib.colors as colors 
 import os
@@ -105,21 +106,23 @@ class dQdVPlotter:
         fig, ax = plt.subplots(figsize=self.figsize)
         
         # Load the data using pandas
-        df = pd.read_csv(self.file_path, sep="\t", header=2)
+        df = pd.read_csv(self.file_path, sep="\t", header=0)
+
+        df = df.drop(df[df["d(Q-Qo)/dE/mA.h/V"] == 0].index)
         
         x = df["Ewe/V"]
         y = df["d(Q-Qo)/dE/mA.h/V"]
 
         # Plot the data
-        #ax.plot(x, y, linewidth=0.5, color="dodgerblue")
-        ax.scatter(x, y, linewidth=0.5, color="blue", marker='o', s=1)
+        ax.plot(x, y, linewidth=3, color="darkcyan")
+       # ax.scatter(x, y, linewidth=0.8, color="darkcyan", marker='o', s=2)
         ax.set_xlim(self.xlim[0], self.xlim[1])
         ax.set_ylim(self.ylim[0], self.ylim[1])
         ax.set_xlabel('Ewe/V', fontsize=self.fontsize)
         ax.set_ylabel('d(Q-Qo)/dE/mA.h/V', fontsize=self.fontsize)
-        ax.set_title('dQ/dV Cycle 1', fontsize=self.fontsize)
+        ax.set_title(label=self.plot_title, fontsize=self.fontsize)
         ax.tick_params(axis='both', which='major', labelsize=self.fontsize)
 
-        ax.legend(bbox_to_anchor=(1, 1), fontsize=self.fontsize, labels=self.legend_labels)
+        ax.legend(bbox_to_anchor=(0.8, 1), fontsize=self.fontsize, labels=self.legend_labels)
         # Show the plot
         plt.show()

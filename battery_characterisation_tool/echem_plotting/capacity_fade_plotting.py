@@ -3,6 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.colors as colors 
 import os
+import pandas as pd
 
 from battery_characterisation_tool.echem_plotting.process_dataframe import ProcessDataframe
 from typing import Optional
@@ -49,6 +50,9 @@ class CapacityFadePlotting:
         xlim: Optional[tuple] = (-2, 50.60),
         ylim: Optional[tuple] = (0, 150),
         fontsize: Optional[int] = 16,
+        file_names: Optional[list] = None,
+        #file_names = Optional[list] = [],  # New argument
+        labels: Optional[list] = None
     ):
     
         self.file_path = file_path
@@ -65,6 +69,8 @@ class CapacityFadePlotting:
         if folder_path != []:    
             self.file_list = self._get_file_list()
         self.process_df = ProcessDataframe()
+        self.file_names = file_names  # New argument
+        self.labels = labels 
 
     def capacity_fade_ce(self) -> np.array:
         """
@@ -138,7 +144,7 @@ class CapacityFadePlotting:
             y = df[f'Specific Discharge Capacity mAh/g_{i}']
 
             colours = sns.color_palette('Dark2', n_colors=length)
-            ax.scatter(x, y, marker='o', color=colours[i], label=self.legend_labels[i], s=20)  #label=self.dataset_name)
+            ax.scatter(x, y, marker='o', color=colours[i], label=self.legend_labels[i], s=15)  #label=self.dataset_name)
             ax.set_xlabel("Cycle Number", fontsize = self.fontsize)
             ax.set_ylabel("Specific Discharge Capacity mAh/g", fontsize=self.fontsize)
             plt.title(self.plot_title, fontsize = self.fontsize)
@@ -150,6 +156,59 @@ class CapacityFadePlotting:
 
             plt.xlim(self.xlim[0], self.xlim[1])
             plt.ylim(self.ylim[0], self.ylim[1])
+
+    #def capacity_fade_neware(self) -> np.array:
+    def capacity_fade_neware(self, folder_path, file_names, labels): #(self, folder_path: str, file_names: list, labels: list):
+        """
+        Generates a plot for capacity fade from multiple datasets stored as CSV files.
+
+        This method reads CSV files from the specified folder, processes them to extract
+        capacity fade data, and generates a scatter plot with different colors for each dataset.
+
+        Args:
+            folder_path (str): Path to the folder containing the CSV files.
+            file_names (list): A list of CSV file names (strings) to be loaded.
+            labels (list): A list of labels for each dataset to be used in the plot legend.
+
+        Returns:
+            None: Displays the plot.
+        """
+        # Create an empty list to hold the dataframes
+        datasets = []
+
+        # Load each CSV file into a DataFrame and append to datasets list
+        for file_name in file_names:
+            file_path = os.path.join(folder_path, file_name)  # Construct full file path
+            df = pd.read_csv(file_path)  # Read CSV into DataFrame
+            datasets.append(df)  # Add DataFrame to the list
+
+        # Now plot the datasets
+        length = len(datasets)
+        fig, ax = plt.subplots(figsize=(7, 6))
+
+        # Iterate over each dataset and plot it
+        for i, df in enumerate(datasets):
+            x = df['Cycle Index']
+            y = df['DChg. Spec. Cap.(mAh/g)']
+
+            # Use seaborn color palette to differentiate each dataset
+            colours = sns.color_palette('Dark2', n_colors=length)
+            ax.scatter(x, y, marker='o', color=colours[i], label=labels[i], s=15)
+
+        # Set axis labels, title, and legend
+        ax.set_xlabel("Cycle Number", fontsize=self.fontsize)
+        ax.set_ylabel("Specific Discharge Capacity mAh/g", fontsize=self.fontsize)
+        plt.title(self.plot_title, fontsize=self.fontsize)
+
+        # Legend and other aesthetic settings
+        ax.legend(loc='lower right', fontsize=(self.fontsize-4), ncol=2)
+        plt.xticks(fontsize=self.fontsize)
+        plt.yticks(fontsize=self.fontsize)
+        ax.tick_params(labelsize=10)
+
+        # Set axis limits if needed
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
 
 
     def vc_cycle_comparison(self) -> np.array:
@@ -180,5 +239,45 @@ class CapacityFadePlotting:
             ax.set_xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
             ax.set_ylabel("Voltage (V)", fontsize=self.fontsize)
             ax.tick_params(labelsize=10)
+            plt.xlim(self.xlim[0], self.xlim[1])
+            plt.ylim(self.ylim[0], self.ylim[1])
             plt.title(self.plot_title, fontsize = self.fontsize)
             ax.legend(bbox_to_anchor=(1, 1), fontsize = (self.fontsize-4), markerscale=5) #, loc = 'upper left'
+            ax.legend(loc = 'lower right', fontsize = (self.fontsize-4), markerscale=5) 
+
+    def dqdv_cycle_comparison(self) -> np.array:
+        """
+        Generates a plot comparing voltage curves across a specific cycle.
+
+        This method processes voltage-capacity data from the specified file path and active mass list,
+        removes large voltage values, and generates a scatter plot comparing the voltage curves
+        for each dataset.
+
+        Returns:
+            np.array: Processed data array.
+        """
+
+        df = pd.read_csv(self.file_path)
+
+        length = len(self.legend_labels)
+        fig, ax = plt.subplots(figsize=(7,6))
+        #df = self.process_df.process_vc_cycle_comparison_df(file_path=self.file_path, 
+                                                    #active_mass_list=self.active_mass_list)
+        #df = self.process_df.remove_large_voltage_values(df)
+        for i in range(length):
+            x = df.iloc[:, 2*i]
+            y = df.iloc[:, 2*i+1]
+
+            colours = sns.color_palette('Dark2', n_colors=length)
+            # TODO: Add in support for colour continuity of larger series
+            #colours = sns.color_palette('Dark2', n_colors=length+3)
+            #ax.scatter(x, y, color=colours[i+3], label=self.legend_labels[i], s=10, marker='_')
+            ax.plot(x, y, color=colours[i], label=self.legend_labels[i])
+            ax.set_xlabel("Voltage (V)", fontsize = self.fontsize)
+            ax.set_ylabel("dQ/dV (mAh/V)", fontsize=self.fontsize)
+            ax.tick_params(labelsize=10)
+            plt.xlim(self.xlim[0], self.xlim[1])
+            plt.ylim(self.ylim[0], self.ylim[1])
+            plt.title(self.plot_title, fontsize = self.fontsize)
+            ax.legend(bbox_to_anchor=(1, 1), fontsize = (self.fontsize-4), markerscale=5) #, loc = 'upper left'
+            ax.legend(loc = 'lower right', fontsize = (self.fontsize-4), markerscale=5) 
