@@ -63,19 +63,19 @@ class RateCapabilityPlotting:
             colours = sns.color_palette('Dark2', n_colors=length)
             markers = ['o', 'o', 'o', 'o', 'o', 'o'] 
             # TODO:  - work out whether markers should be user defined/inputted
-            ax.scatter(x, y, marker=markers[i], color=colours[i], label=self.legend_labels[i], s=50)  #label=self.dataset_name)
-        ax.set_xlabel("Cycle Number", fontsize = self.fontsize)
-        ax.set_ylabel("Specific Discharge Capacity mAh/g", fontsize=self.fontsize)
+            ax.scatter(x, y, marker=markers[i], color=colours[i], label=self.legend_labels[i], s=30)  #label=self.dataset_name)
+        ax.set_xlabel("Cycle Number", fontsize = self.fontsize+2)
+        ax.set_ylabel("Specific Discharge Capacity mAh/g", fontsize=self.fontsize+4)
         plt.title(self.plot_title, fontsize = self.fontsize)
-        ax.text(0, 140, "C/10", fontsize=self.fontsize)
-        ax.text(6, 140, "C/5", fontsize=self.fontsize)
-        ax.text(11, 140, "C/2", fontsize=self.fontsize)
-        ax.text(17, 140, "C", fontsize=self.fontsize)
-        ax.text(22, 140, "2C", fontsize=self.fontsize)
-        ax.text(27, 140, "5C", fontsize=self.fontsize)
-        ax.text(31, 140, "C/5", fontsize=self.fontsize)
-        ax.legend(bbox_to_anchor=(1, 1), fontsize = (self.fontsize-4)) #, loc = 'upper left'
-        ax.tick_params(labelsize=10)
+        ax.text(0, 140, "C/10", fontsize=self.fontsize-4)
+        ax.text(6, 140, "C/5", fontsize=self.fontsize-4)
+        ax.text(11, 140, "C/2", fontsize=self.fontsize-4)
+        ax.text(17, 140, "C", fontsize=self.fontsize-4)
+        ax.text(22, 140, "2C", fontsize=self.fontsize-4)
+        ax.text(27, 140, "5C", fontsize=self.fontsize-4)
+        ax.text(31, 140, "C/5", fontsize=self.fontsize-4)
+        ax.legend(bbox_to_anchor=(1, 0.4), fontsize = (self.fontsize)) #, loc = 'upper left'
+        ax.tick_params(labelsize=20)
         plt.xlim(self.xlim[0], self.xlim[1])
         plt.ylim(self.ylim[0], self.ylim[1])
 

@@ -1,6 +1,7 @@
 /Data
 /Archive
 /notebooks
+/Images
 *.egg-info/
 **/.vscode/
 __pycache__

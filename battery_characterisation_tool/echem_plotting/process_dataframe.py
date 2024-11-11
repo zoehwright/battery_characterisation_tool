@@ -96,6 +96,17 @@ class ProcessDataframe:
 
         return df
     
+    def process_vc_neware_df(self,
+                            file_path) -> pd.DataFrame:
+        df = pd.read_csv(file_path, header=0)
+        df_headers = df.columns.tolist()
+        df_headers = [column for column in df_headers if column.startswith("Cap")]
+        for i, header in enumerate(df_headers):
+            df[header] = df[header]/active_mass_list[i]
+            df.rename(columns={header: "Specific_{header}g-1"})
+
+        return df
+    
     def remove_large_voltage_values(self,
                                     df) -> pd.DataFrame:
         df_headers = df.columns.tolist()
