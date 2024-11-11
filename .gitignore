@@ -2,6 +2,7 @@
 /Archive
 /notebooks
 /Images
+**/xrd_plot_help.py
 *.egg-info/
 **/.vscode/
 __pycache__

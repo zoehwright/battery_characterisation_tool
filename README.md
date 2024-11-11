@@ -87,7 +87,7 @@ This is a small class which only has a few functions (described below). It is ca
 
 - To plot a rate capability plot follow the below code structure (using your own folder path):
 
-![alt text](/Images/rate_capability_code.png)
+![alt text](/readme_images/rate_capability_code.png)
 
 - The output should look something like this:
 ![alt text](/Images/rate_cap_plot.png)
@@ -100,7 +100,7 @@ This is a small class which only has a few functions (described below). It is ca
 - Use the code below to get the plot.
 - The datasets used to plot these figures also need to be cnQECe.txt files (how to do this is highlighted above).
 
-![ ](/Images/cap_fade_ce_code.png)![ ](/Images/cap_fade_with_ce.png)
+![ ](/readme_images/cap_fade_ce_code.png)![ ](/Images/cap_fade_with_ce.png)
 
 #### **capacity_fade**
 
@@ -108,7 +108,7 @@ This is a small class which only has a few functions (described below). It is ca
 - Use the below code to get your plot.
 - Again, if you wish to have the same colours for the same datasets (linking to other types of plots such as rate capability) ensure to number your files in order within the folder path which is being used.
 
-![alt text](/Images/cap_fade_comp_code.png)
+![alt text](/readme_images/cap_fade_comp_code.png)
 ![alt text](/Images/cap_fade_comparison.png)
 
 #### **vc_cycle_comparison**
@@ -121,7 +121,7 @@ This is a small class which only has a few functions (described below). It is ca
 - In the figure above you can see in row 1 column C starts with 'Capacity' not 'Spec. Cap' like in columns A & E. Do not worry about biologic not exporting the specific capacity whilst neware does - this is dealt with in the code and you just need to manually put in each active mass using active_mass_list. When putting these values into the list ensure they are in the same order as your exported cycle data (otherwise your specific capacity will be incorrect).
 - Use the below code ensuring to add the legend_labels in the same order as the active_mass_list values.
 
-![alt text](/Images/cycle_comp_code.png)
+![alt text](/readme_images/cycle_comp_code.png)
 
 ![alt text](/Images/cycle_comparison.png)
 
