@@ -67,12 +67,97 @@ class GCDPlotting:
             self.file_list = self._get_file_list()
         self.process_df = ProcessDataframe()
         self.data = None
+        self.df = None
 
      def read_neware_data(self):
         
-        df = pd.read_csv(self.file_path, sep="\t", header=0)
+        self.df = pd.read_csv(self.file_path, header=1)
 
-        "Spec. Cap.(mAh/g)"
+        #self.df = self.df.drop(index=0)
+
+        #self.df.head()
+        #print(self.df)
+        
+     def count_neware_voltage_columns(self):
+        self.df.columns.str.startswith('Spec. Cap.(mAh/g)').sum()
+        print(self.df.columns.str.startswith('Spec. Cap.(mAh/g)').sum())
+
+        self.df.columns.str.startswith('Voltage').sum()
+        print(self.df.columns.str.startswith('Voltage').sum())
+
+     def specific_cycle_plot_neware(self, cycle_number=1):   
+
+        self.df = self.process_df.remove_large_voltage_values(self.df)
+
+        # Validate the input (check if it's a number)
+        cycle_number = f'.{cycle_number}'  # Format the cycle number as a string like '.2', '.3', etc.
+
+        # Filter columns that end with the given cycle number
+        columns_ending_with_cycle = self.df.columns[self.df.columns.str.endswith(cycle_number)]
+
+        # Check if the specific columns exist for the selected cycle
+        if f'Spec. Cap.(mAh/g){cycle_number}' in columns_ending_with_cycle and f'Voltage(V){cycle_number}' in columns_ending_with_cycle:
+            # Extract the columns for the given cycle
+            spec_cap_column = self.df[f'Spec. Cap.(mAh/g){cycle_number}']
+            voltage_column = self.df[f'Voltage(V){cycle_number}']
+            
+            # Plot the data
+            plt.plot(spec_cap_column, voltage_column, color = "lightseagreen")
+            plt.xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
+            plt.ylabel("Ewe/V", fontsize = self.fontsize)
+            plt.xlim(self.xlim[0], self.xlim[1])
+            plt.ylim(self.ylim[0], self.ylim[1])
+            plt.title(f'GCD Plot for cycle {cycle_number[1:]}')  # Remove the dot for display
+            #plt.legend(bbox_to_anchor=(1, 0.9), fontsize = self.fontsize, labels = self.legend_labels)
+            #plt.grid(True)
+            plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+            plt.show()
+        else:
+            print(f"The specified columns for cycle {cycle_number[1:]} are not available in the dataframe.")
+
+     def gcd_neware(self):
+        
+        #fig, ax = plt.subplots(figsize=self.figsize)
+        #self.df = pd.read_csv(self.file_path, header=1)
+        self.df = pd.read_csv(self.file_path, header=1)
+        self.df = self.process_df.remove_large_voltage_values(self.df)
+
+    
+        #charge_data = df[df["charge_discharge"] == 1]
+        #discharge_data = df[df["charge_discharge"] == -1]
+        
+        voltage_count = self.df.columns.str.startswith('Voltage').sum()
+        cycle_numbers = list(range(1, voltage_count + 1))
+        n = len(cycle_numbers)
+        blues = sns.dark_palette("darkcyan", n_colors=n, as_cmap=False)
+        #blues = [colors.rgb2hex(i) for i in blues]
+        print(cycle_numbers)
+
+        spec_cap_columns = [col for col in self.df.columns if col.startswith("Spec. Cap.")]
+        voltage_columns = [col for col in self.df.columns if col.startswith("Voltage")]
+
+        # Check if the lengths of the two column groups match
+        if len(spec_cap_columns) != len(voltage_columns):
+            print("Warning: The number of 'Spec. Cap.' and 'Voltage' columns do not match.")
+            print("Ensure they are properly aligned for correct plotting.")
+    
+        # Plot each pair
+        plt.figure(figsize=(10, 6))
+        for idx, (spec_cap_col, voltage_col) in enumerate(zip(spec_cap_columns, voltage_columns)):
+        # Use blues[idx] to assign a unique color for each pair
+            plt.plot(self.df[spec_cap_col], self.df[voltage_col], color=blues[idx])
+
+        # Customize the plot
+        plt.xlabel('Specific Capacity (mAh/g)', fontsize = self.fontsize)
+        plt.ylabel('Voltage (V)', fontsize = self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        #plt.legend(bbox_to_anchor=(1, 1), fontsize = self.fontsize, labels = self.legend_labels) #, loc = 'lower left'
+        #plt.grid(True)
+        
+           
      def gcd_single_dataset(self):
     
         fig, ax = plt.subplots(figsize=self.figsize)
@@ -96,9 +181,7 @@ class GCDPlotting:
         ax.set_xlim(self.xlim[0], self.xlim[1])
         ax.set_ylim(self.ylim[0], self.ylim[1])
         ax.tick_params(axis='both', which='major', labelsize=self.fontsize)
-        plt.legend(bbox_to_anchor=(1, 0.9), fontsize = self.fontsize, labels = self.legend_labels) #, loc = 'lower left'
-        #plt.legend(bbox_to_anchor=(1, 1)) 
-
+        plt.legend(bbox_to_anchor=(1, 1), fontsize = self.fontsize, labels = self.legend_labels) #, loc = 'lower left'
 
      def gcd_color_grad(self):
 

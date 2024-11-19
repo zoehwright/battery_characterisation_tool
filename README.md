@@ -172,3 +172,17 @@ First in the voltage_capacity_plotting.ipynb notebook (in the templates folder) 
 
 ![alt text](/Images/gcd_color_grad_code.png)
 ![alt text](/Images/GCD_colour.png)
+
+#### **specific_cycle_plot_neware**
+
+- This function is used on Neware data sets to plot every cycle. It also incorporates a seaborn colour scheme which allows colour fade to show for capacity fade occurring during cycling.
+
+![alt text](/Images/code_specific_cycle_plot_neware.png)
+![alt text](/Images/GCD_single_neware_fig.png)
+
+#### **gcd_neware**
+
+- This function is used on Neware data sets to plot every cycle. It also incorporates a seaborn colour scheme which allows colour fade to show for capacity fade occurring during cycling.
+
+![alt text](/Images/code_GCD_Neware.png)
+![alt text](/Images/GCD_Neware.png)
