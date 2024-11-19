@@ -108,5 +108,8 @@ class ProcessDataframe:
         
         return df
         
-    
-              
+    def process_dqdv_neware(self,
+                            file_path,
+                            df) -> pd.DataFrame:
+        df = pd.read_csv(file_path, header=1)
+        
