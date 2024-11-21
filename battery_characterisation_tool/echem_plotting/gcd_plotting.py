@@ -104,7 +104,7 @@ class GCDPlotting:
             # Plot the data
             plt.plot(spec_cap_column, voltage_column, color = "lightseagreen")
             plt.xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
-            plt.ylabel("Ewe/V", fontsize = self.fontsize)
+            plt.ylabel("Voltage (V)", fontsize = self.fontsize)
             plt.xlim(self.xlim[0], self.xlim[1])
             plt.ylim(self.ylim[0], self.ylim[1])
             plt.title(f'GCD Plot for cycle {cycle_number[1:]}')  # Remove the dot for display
@@ -142,7 +142,7 @@ class GCDPlotting:
             print("Ensure they are properly aligned for correct plotting.")
     
         # Plot each pair
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=self.figsize) # 10,6
         for idx, (spec_cap_col, voltage_col) in enumerate(zip(spec_cap_columns, voltage_columns)):
         # Use blues[idx] to assign a unique color for each pair
             plt.plot(self.df[spec_cap_col], self.df[voltage_col], color=blues[idx])
@@ -173,13 +173,14 @@ class GCDPlotting:
         x_charge, x_discharge = charge_data["Specific Capacity mAh/g"], discharge_data["Specific Capacity mAh/g"]
         y_charge, y_discharge = charge_data["Ewe/V"], discharge_data["Ewe/V"]
 
-        ax.scatter(x_charge, y_charge, marker='o', s=1, color = charge_color)
-        ax.scatter(x_discharge, y_discharge, marker='o', s=1, color = discharge_color)
+        ax.scatter(x_charge, y_charge, marker='o', s=0.2, color = charge_color)
+        ax.scatter(x_discharge, y_discharge, marker='o', s=0.2, color = discharge_color)
         ax.set_xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
-        ax.set_ylabel("Ewe/V", fontsize = self.fontsize)
+        ax.set_ylabel("Voltage (V)", fontsize = self.fontsize)
         #ax2.tick_params(axis='y', labelsize=10)
         ax.set_xlim(self.xlim[0], self.xlim[1])
         ax.set_ylim(self.ylim[0], self.ylim[1])
+        ax.set_xticks(np.arange(0, 199, 25))
         ax.tick_params(axis='both', which='major', labelsize=self.fontsize)
         plt.legend(bbox_to_anchor=(1, 1), fontsize = self.fontsize, labels = self.legend_labels) #, loc = 'lower left'
 
@@ -199,7 +200,7 @@ class GCDPlotting:
         n = len(cycle_numbers)
         blues = sns.dark_palette("darkcyan", n_colors=n, as_cmap=False)
         #blues = [colors.rgb2hex(i) for i in blues]
-        reds = sns.dark_palette("darkcyan", n_colors=n, as_cmap=False)
+        reds = sns.dark_palette("darkcyan", n_colors=n, as_cmap=False) #sns.dark_palette darkcyan
         #reds = [colors.rgb2hex(i) for i in reds]
         print(cycle_numbers)
 
@@ -215,10 +216,12 @@ class GCDPlotting:
                 ax.scatter(x_discharge_filtered, y_discharge_filtered, marker='o', s=0.05, color=reds[int(i)])
 
         ax.set_xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
-        ax.set_ylabel("Ewe/V", fontsize = self.fontsize)
+        ax.set_ylabel("Voltage (V)", fontsize = self.fontsize)
         ax.set_xlim(self.xlim[0], self.xlim[1])
         ax.set_ylim(self.ylim[0], self.ylim[1])
+        ax.set_xticks(np.arange(0, 199, 25))
         ax.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        #plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
         ax.set_title(label=self.plot_title, fontsize=self.fontsize)
         #ax.legend(bbox_to_anchor=(1, 0.8), fontsize = self.fontsize, labels = self.legend_labels) #, loc = 'lower left'
 

@@ -67,7 +67,12 @@ This is a small class which only has a few functions (described below). It is ca
 
 - In EC-lab click: Experiment -> Load Data File -> Select the .mpr raw data file of a cycled cell. 
   - To extract a single cycle: click Tools -> Extract Cycles/Loops -> Load -> Load the .mpr raw file if it is not already stated in the Input File path. Parameters -> Extract Cycles -> enter the specific cycle number 'X' you want to be extracted.  Make sure that prompt on replace in NOT ticked. Click Extract.
+  ![alt text](/Images/extract-cycles-bio-dqdv.png)
   - To extract all cycles: click Tools -> Extract Cycles/Loops -> Load -> Load the .mpr file if it is not already stated in the Input File path. Parameters -> Extract Cycles -> all -> Make sure that prompt on replace in NOT ticked. Click Extract.
+  - Next go back to the loaded up raw data in EC-Lab and go to the Process data function:
+  ![alt text](/Images/process-data-location.png)
+  - In this tab you now need to add the .mpp file you just created when extracting the specific cycle. Untick 'Allow Reprocessing' and untick 'All'. Then select the 5 following options: 'time/s', 'Ewe/V' and 'I/mA' from the left hand box (time & I will be mandatory - you cannot unselect them). Then select 'cycle number' & d(Q-Qo)/dE/mA.h/V' from the right hand side box. Then press process.
+  ![alt text](/Images/process-data-edits.png)
   - For both of the above to convert that .mpr file or .mpp file to a .txt file click on Experiment -> Export data as text -. click the plus icon and load the .mpr individual cycle file (should be named as  NAMEOFMATERIAL_cycleX.mpr 'X' being defined in the previous step). In variables to export box choose the following in this order: time/s; cycle number; Ewe/V; I/mA; d(Q-Qo)/dE/mA.h/V -> Click Export and the .txt file of that cycle will be produced.
 
 - In Neware BTS, load up one dataset by clicking: File -> Open -> Select a .ndax file. In the circulation range ensure you have all cycles plotted to check the figure it shows on the window viewer.

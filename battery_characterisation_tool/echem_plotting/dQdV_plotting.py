@@ -73,7 +73,7 @@ class dQdVPlotter:
         """
         files = self._get_file_list()
 
-        palette = sns.color_palette("husl", len(files))  # Choose a palette and set number of colors
+        palette = sns.color_palette("Dark2", len(files))  # Choose a palette and set number of colors #husl
 
         #plt.figure(figsize=self.figsize)
         fig, ax = plt.subplots(figsize=self.figsize)
@@ -93,13 +93,15 @@ class dQdVPlotter:
             x = data[:,2]
             y = data[:,4]
             #print(df)
-            ax.scatter(x, y, label=file, color=palette[idx], marker='o', s=5) #, markerfacecolor ="none", lw=0.7) 
-            #plt.plot(x, y, label=file, color=palette[idx], markerfacecolor ="none", lw=0.7) 
+            #ax.scatter(x, y, label=file, color=palette[idx], marker='o', s=5) #, markerfacecolor ="none", lw=0.7) 
+            ax.plot(x, y, label=file, color=palette[idx], linewidth = 1)  #, markerfacecolor ="none", lw=0.7
         # plt.title(label=self.plot_title, fontsize=self.fontsize) 
         ax.set_title(label=self.plot_title, fontsize=self.fontsize)
         ax.set_xlabel("Ewe/V", fontsize=self.fontsize)
         ax.set_ylabel("d(Q-Qo)/dE/mA.h/V", fontsize=self.fontsize)
         ax.tick_params(axis='both', which='major', labelsize=18)
+        ax.set_xlim(self.xlim[0], self.xlim[1])
+        ax.set_ylim(self.ylim[0], self.ylim[1])
         # plt.xlabel("Ewe/V", fontsize=self.fontsize)   
         # plt.ylabel("d(Q-Qo)/dE/mA.h/V", fontsize=self.fontsize) 
         # plt.xlim(self.xlim[0], self.xlim[1])
@@ -109,7 +111,7 @@ class dQdVPlotter:
         # plt.xticks(fontsize=self.fontsize)
         # plt.yticks(fontsize=self.fontsize)
         # plt.legend(bbox_to_anchor=(1, 1), fontsize = self.fontsize, labels = self.legend_labels)
-        ax.legend(bbox_to_anchor=(1, 1), fontsize = self.fontsize, labels = self.legend_labels)
+        ax.legend(loc = "upper left", fontsize = self.fontsize, labels = self.legend_labels) #bbox_to_anchor=(1, 1)
         #plt.rcParams.update({'font.size': 10})  
         #plt.show()
 
@@ -176,7 +178,7 @@ class dQdVPlotter:
 
         palette = sns.color_palette("Dark2", len(files))  # Choose a palette and set number of colors
 
-        #plt.figure(figsize=self.figsize)
+        plt.figure(figsize=self.figsize)
         #fig, ax = plt.subplots(figsize=self.figsize)
 
         for idx, file in enumerate(files):
@@ -273,4 +275,65 @@ class dQdVPlotter:
         #plt.tight_layout()
         plt.show()
 
-   
+    def dqdv_multiple_cycles_biologic_test(self):
+        """
+        Generates a plot with specific cycle datasets listed in the folder_path.
+        """
+        files = self._get_file_list()
+        #print("Files to be plotted:", files)
+
+        palette = sns.color_palette("Dark2", len(files))  # Choose a palette and set number of colors
+
+        plt.figure(figsize=self.figsize)
+        #fig, ax = plt.subplots(figsize=self.figsize)
+
+        for idx, file in enumerate(files):
+            path = os.path.join(self.folder_path, file)
+            # Check if the file has a header (skip_header_value = 1 means it has a header)
+            skip_header_value = self.process_df.check_file_header_present(path)
+
+            try:
+            # Read the file using pandas, with handling for header
+                if skip_header_value == 0:
+                    df = pd.read_csv(path, header=None, encoding='utf-8')  # No header
+                else:
+                    df = pd.read_csv(path, encoding='utf-8')  # Header present
+            except UnicodeDecodeError:
+                try:
+                    # Try reading with a different encoding if UnicodeDecodeError occurs
+                    if skip_header_value == 0:
+                        df = pd.read_csv(path, header=0, encoding='latin1')
+                    else:
+                        df = pd.read_csv(path, encoding='latin1')
+                except UnicodeDecodeError as e:
+                    print(f"Error reading {path} with both UTF-8 and Latin1 encoding: {e}")
+                    continue
+            
+            x = df.iloc[1:,0].astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
+            y = df.iloc[1:,1].astype(float)
+            plt.plot(x, y, linewidth = 1, color=palette[idx]) #label="dQ/dV vs Voltage", 
+        plt.xlabel("Ewe/V", fontsize = self.fontsize)
+        plt.ylabel("dQ/dV(mAh/V)", fontsize = self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(loc = "upper left", fontsize = self.fontsize - 4 , labels = self.legend_labels) # bbox_to_anchor = (1,1)
+        #plt.grid(True)
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        #plt.show()
+
+    def dqdv_single_cycle_biologic_test(self):   
+
+        self.df = pd.read_csv(self.file_path, header=0)
+        
+        # Plot the data
+        plt.plot(self.df["Ewe/V"], self.df["d(Q-Qo)/dE/mA.h/V"], label="dQ/dV vs Voltage", linewidth = 1)
+        plt.xlabel("Ewe/V", fontsize = self.fontsize)
+        plt.ylabel("dQ/dV(mAh/V)", fontsize = self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(loc = "upper left", fontsize = self.fontsize - 4 , labels = self.legend_labels)
+        #plt.grid(True)
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.show()
