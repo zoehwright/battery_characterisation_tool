@@ -25,7 +25,7 @@ class XRDPlotter:
         figsize: Optional[tuple] = (10, 8),
         fontsize: Optional[int] = 16,
         xlim: Optional[tuple] = (0, 90),
-        ylim: Optional[tuple] = (100, 1500),
+        ylim: Optional[tuple] = (0, 1500),
         xlabel: Optional[str] = r"2$\theta$ / °",
         ylabel: Optional[str] = "Intensity",
         offsets: Optional[int] = [0, 100000, 200000, 300000], 
@@ -51,10 +51,36 @@ class XRDPlotter:
         self.zoom_x_limit= zoom_x_limit
         self.zoom_width = zoom_width
 
+    """
     def _get_file_list(self) -> list:
-        arr = os.listdir(self.folder_path)
-        arr = [f"{self.folder_path}\{item}" for item in arr if item.endswith((".xye", ".dat", ".asc"))]
-        return arr    
+
+        file_list = []
+    
+    # Check if folder_path is a single path or list of paths
+        if isinstance(self.folder_path, list):
+            for folder in self.folder_path:
+                files = os.listdir(folder)
+                files = [os.path.join(folder, item) for item in files if item.endswith(".asc")]
+                file_list.extend(files)
+            print("Folder path:", self.folder_path)
+        else:
+            files = os.listdir(self.folder_path)
+            file_list = [os.path.join(self.folder_path, item) for item in files if item.endswith(".asc")]
+        
+        return file_list
+
+        #arr = os.listdir(self.folder_path)
+        #arr = [f"{self.folder_path}\{item}" for item in arr if item.endswith((".xye", ".dat", ".asc"))]
+        #return arr 
+    """
+
+    def _get_file_list(self) -> list:
+        import pdb
+        #pdb.set_trace()
+        files = os.listdir(self.folder_path)
+        print("All files in directory:", files)
+        arr = [os.path.join(self.folder_path, item) for item in files if item.endswith((".xye", ".dat", ".asc"))]
+        return arr
     
     def transformation_y(self, y):
         if self.transformation_type == "sqrt":
@@ -351,23 +377,31 @@ class XRDPlotter:
         plt.rcParams['font.family'] = 'serif'
         plt.figure(figsize=self.figsize)
 
-        for i, filename in enumerate(self._get_file_list()):
-            if filename.endswith('.xye') or filename.endswith('.asc') or filename.endswith('.dat'):
-                file_path = os.path.join(self.folder_path, filename)
-                data = self.read_data_csv(file_path)
-                x = data.iloc[:, 0]
-                y_obs = self.transformation_y(data.iloc[:, 1]) + self.offsets[i]  # Apply offset to y-values
-                y_calc = self.transformation_y(data.iloc[:, 2]) + self.offsets[i] 
-                plt.plot(x, y_obs, label="Observed " + self.legend_labels[i], linewidth=0.5)
-                plt.plot(x, y_calc, label="Calculated " + self.legend_labels[i], linewidth=1, linestyle="--")
+        files = self._get_file_list()
+        print("Files to be plotted:", files)
+
+        palette = sns.color_palette("Dark2", len(files))
+
+        for i, file in enumerate(files):
+            if file.endswith('.xye') or file.endswith('.asc') or file.endswith('.dat'):
+                path = os.path.join(self.folder_path, file)
+                df = pd.read_csv(path, header=None, encoding='utf-8', delimiter = '\s+')
+                x = df.iloc[:, 0]
+                import pdb
+                #pdb.set_trace()
+                y_obs = self.transformation_y(df.iloc[:, 1]) + self.offsets[i]  # Apply offset to y-values
+                y_calc = self.transformation_y(df.iloc[:, 2]) + self.offsets[i] 
+                plt.scatter(x, y_obs, label="Observed " + self.legend_labels[i], color = "black", s=0.5)
+                plt.plot(x, y_calc, label="Calculated " + self.legend_labels[i], linewidth=1.5, color = palette[i])
         #TODO duplicate this function but for with ticks - use above for loop but add in function to search for files with ticks in their file name and create a separate offset function for ticks stacking at bottom of plot
         # Set plot limits and labels
-        plt.xlim(self.xlim)
-        plt.ylim(self.ylim)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
         plt.title(self.plot_title, fontsize=self.fontsize)
         plt.xlabel(self.xlabel, fontsize=self.fontsize)
         plt.ylabel(self.ylabel, fontsize=self.fontsize)
-        plt.legend()
+        plt.gca().tick_params(axis='y', which='both', left=False, right=False)
+        plt.legend(bbox_to_anchor = (1, 1), ncol =2)
         plt.show()  
 
     def rietveld_difference_plot(self):
