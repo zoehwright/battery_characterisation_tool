@@ -67,8 +67,26 @@ This is a small class which only has a few functions (described below). It is ca
 
 - In EC-lab click: Experiment -> Load Data File -> Select the .mpr raw data file of a cycled cell. 
   - To extract a single cycle: click Tools -> Extract Cycles/Loops -> Load -> Load the .mpr raw file if it is not already stated in the Input File path. Parameters -> Extract Cycles -> enter the specific cycle number 'X' you want to be extracted.  Make sure that prompt on replace in NOT ticked. Click Extract.
+  ![alt text](/Images/extract-cycles-bio-dqdv.png)
   - To extract all cycles: click Tools -> Extract Cycles/Loops -> Load -> Load the .mpr file if it is not already stated in the Input File path. Parameters -> Extract Cycles -> all -> Make sure that prompt on replace in NOT ticked. Click Extract.
+  - Next go back to the loaded up raw data in EC-Lab and go to the Process data function:
+  ![alt text](/Images/process-data-location.png)
+  - In this tab you now need to add the .mpp file you just created when extracting the specific cycle. Untick 'Allow Reprocessing' and untick 'All'. Then select the 5 following options: 'time/s', 'Ewe/V' and 'I/mA' from the left hand box (time & I will be mandatory - you cannot unselect them). Then select 'cycle number' & d(Q-Qo)/dE/mA.h/V' from the right hand side box. Then press process.
+  ![alt text](/Images/process-data-edits.png)
   - For both of the above to convert that .mpr file or .mpp file to a .txt file click on Experiment -> Export data as text -. click the plus icon and load the .mpr individual cycle file (should be named as  NAMEOFMATERIAL_cycleX.mpr 'X' being defined in the previous step). In variables to export box choose the following in this order: time/s; cycle number; Ewe/V; I/mA; d(Q-Qo)/dE/mA.h/V -> Click Export and the .txt file of that cycle will be produced.
+
+- In Neware BTS, load up one dataset by clicking: File -> Open -> Select a .ndax file. In the circulation range ensure you have all cycles plotted to check the figure it shows on the window viewer.
+- Then on the top bar click the funnel icon labelled as 'Data Filter'. Click the button 'C1 rate' which will alter the filter conditions to a standard preset. Choose the folder where your wish to save the filtered dataset and give a file name for this dataset. The file will be saved as a .ndax. It is important to alter the file name as otherwise it may save the filtered dataset over your existing raw dataset. Ensure both tick boxes at the bottom are selected. Then press 'OK'.
+![alt text](/Images/Data_filter.png)
+- Now Neware will open up this new .ndax file. Load all cycles in the viewer window to check that your data looks similar.
+-To export a specific cycle, load that cycle in the circulation range in the dQ/dV window (click double arrows in top right hand corner of plotting window). Then click the 'Export report' button (on the top bar to the left of the excel icon with a big green X on it).
+- In the export report menu, first ensure customize report is selected and csv file type. Add in the file name you wish to save it as and the file path. The custom report setting tab will also now be open. Go to the 'Recording layer' tab. In circulation range put the specific cycle from and to you wish to export. Then in the tick box on the right hand side, ensure only voltage and dQ/dV boxes are selected. At the bottom of this window is a subsection called 'CSV settings' ensure that the 'Recording layer' box is selected. Then press 'Export' in the 'Export report' tab.
+![alt text](/Images/Export-tab-neware-dqdv.png)
+- Alternatively, to export multiple cycles you can follow the above but just change the circulation range to encorporate more cycles.
+
+To understand the influence that the Neware filtering setting has see the below figures. The top figure is just the raw data. The bottom figure is with the filtering.
+![alt text](/Images/dqdv-without-filter.png)
+![alt text](/Images/dqdv-with-filtering.png)
 
 ###	**RateCapabilityPlotting**
 
@@ -129,6 +147,7 @@ This is a small class which only has a few functions (described below). It is ca
 
 ### **dQdVPlotting**
 
+### **For Biologic datasets use the following functions:** 
 
 #### **_get_file_list()**
 
@@ -136,7 +155,7 @@ This is a small class which only has a few functions (described below). It is ca
 
 #### **dqdv_mulitple_cycles**
 
--This function requires you to extract individual cycle datasets from Neware and biologic and collate them into a specific folder. Then the code checks the folder path and will plot all the datasets in the folder in the order that they sit in the folder (ordering your files in the correct order is key here).
+-This function requires you to extract individual cycle datasets from Biologic and collate them into a specific folder. Then the code checks the folder path and will plot all the datasets in the folder in the order that they sit in the folder (ordering your files in the correct order is key here).
 -The data is plotted as a scatter plot.
 
 ![alt text](/Images/dqdv_multiple_cycles_code.png)
@@ -144,14 +163,34 @@ This is a small class which only has a few functions (described below). It is ca
 
 #### **dqdv_single_cycle**
 
--This function plots a single cycle of a cell as a scatter plot (the dataset for this has been extracted from Neware or Biologic data as a .csv or .txt file).
+-This function plots a single cycle of a cell as a scatter plot (the dataset for this has been extracted from Biologic data as a .csv or .txt file).
 
 ![alt text](/Images/dqdv_single_cycle_code.png)
 ![alt text](/Images/dqdv_single_cycle.png)
 
 #### **Additional capability**
 
--In the template dQdV_plotting.ipynb notebook there is also a simple plotting function which allows you to plot the dQdV plot for every cycle of a cell and also every cycle can be plotted in a different colour too. To do this you just need to extract the dQdV data set for a cell as a .csv or .txt file and in the file_path for that dataset. This is more useful just to check your dataset looks the same on python as it does on the Neware BTS or Bioloigc EC-lab software platforms.
+- In the template dQdV_plotting.ipynb notebook there is also a simple plotting function which allows you to plot the dQdV plot for every cycle of a cell and also every cycle can be plotted in a different colour too. To do this you just need to extract the dQdV data set for a cell as a .csv or .txt file and in the file_path for that dataset. This is more useful just to check your dataset looks the same on python as it does on the Biologic EC-lab software platforms.
+
+### **For Neware datasets sue the below functions for dQ/dV plotting**
+#### **dqdv_single_cycle_neware**
+
+- This function does the same as the above but is specific to neware data sets. Input your file path into the dqdv notebook. You can change the figure size, title, fonts and x and y axes like usual. Please ensure that the legend label is also entered.
+
+![alt text](/Images/dqdv-single-neware-code.png)
+![alt text](/Images/dqdv-example-neware-single.png)
+
+#### **dqdv_multiple_cycles_neware**
+
+- This function again uses a folder path directory instead of an individual file path. For this function, ensure that the number of legend labels matches the number and order of the files listed inside the folder path.
+
+![alt text](/Images/dqdv-neware-multiple-code.png)
+![alt text](/Images/dqdv-multiple-neware-fig.png)
+
+- There are several other functions which allow you to plot every cycle in one go. To use these 2 functions (dqdv_all_cycles_neware & dqdv_all_cycles_neware_colour). When you are exporting your dataset from the filtered .ndax file, in the 'Recording layer' of the 'Custom report settings' tabes ensure that you also select 'Cycle Index' in the tick box table (as well as 'Voltage' and 'dQ/dV') and change your circulation range to the full range of cycles that you would like to plot on the figure.
+
+![alt text](/Images/dqdv-neware-all-cycles-export.png)
+
 
 ### **GCDPlotting**
 
@@ -172,3 +211,17 @@ First in the voltage_capacity_plotting.ipynb notebook (in the templates folder) 
 
 ![alt text](/Images/gcd_color_grad_code.png)
 ![alt text](/Images/GCD_colour.png)
+
+#### **specific_cycle_plot_neware**
+
+- This function is used on Neware data sets to plot every cycle. It also incorporates a seaborn colour scheme which allows colour fade to show for capacity fade occurring during cycling.
+
+![alt text](/Images/code_specific_cycle_plot_neware.png)
+![alt text](/Images/GCD_single_neware_fig.png)
+
+#### **gcd_neware**
+
+- This function is used on Neware data sets to plot every cycle. It also incorporates a seaborn colour scheme which allows colour fade to show for capacity fade occurring during cycling.
+
+![alt text](/Images/code_GCD_Neware.png)
+![alt text](/Images/GCD_Neware.png)
