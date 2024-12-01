@@ -210,6 +210,55 @@ class CapacityFadePlotting:
         plt.xlim(self.xlim[0], self.xlim[1])
         plt.ylim(self.ylim[0], self.ylim[1])
 
+    def dqdv_capacity_fade_both(self):
+        """
+        Generates a plot with specific cycle datasets listed in the folder_path.
+        """
+        files = self._get_file_list()
+        print("Files to be plotted:", files)
+
+        palette = sns.color_palette("Dark2", len(files))  # Choose a palette and set number of colors
+
+        plt.figure(figsize=self.figsize)
+        #fig, ax = plt.subplots(figsize=self.figsize)
+
+        for idx, file in enumerate(files):
+            path = os.path.join(self.folder_path, file)
+            # Check if the file has a header (skip_header_value = 1 means it has a header)
+            skip_header_value = self.process_df.check_file_header_present(path)
+
+            try:
+            # Read the file using pandas, with handling for header
+                if skip_header_value == 0:
+                    df = pd.read_csv(path, header=None, encoding='utf-8')  # No header
+                else:
+                    df = pd.read_csv(path, encoding='utf-8')  # Header present
+            except UnicodeDecodeError:
+                try:
+                    # Try reading with a different encoding if UnicodeDecodeError occurs
+                    if skip_header_value == 0:
+                        df = pd.read_csv(path, header=0, encoding='latin1')
+                    else:
+                        df = pd.read_csv(path, encoding='latin1')
+                except UnicodeDecodeError as e:
+                    print(f"Error reading {path} with both UTF-8 and Latin1 encoding: {e}")
+                    continue
+            
+            x = df.iloc[1:,0].astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
+            y = df.iloc[1:,1].astype(float)
+            plt.scatter(x, y, s = 15, color=palette[idx], marker='o') #label="dQ/dV vs Voltage", 
+        plt.xlabel("Cycle Number", fontsize = self.fontsize)
+        plt.ylabel("Specific Discharge Capacity (mAh/g)", fontsize = self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(loc = "lower right", fontsize = self.fontsize - 4 , labels = self.legend_labels, ncol =2) # bbox_to_anchor = (1,1)
+        #ax.legend(loc = 'lower right', fontsize = (self.fontsize-4), ncol=2)
+        #plt.grid(True)
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        #plt.show()
+
+
 
     def vc_cycle_comparison(self) -> np.array:
         """
@@ -281,3 +330,51 @@ class CapacityFadePlotting:
             plt.title(self.plot_title, fontsize = self.fontsize)
             ax.legend(bbox_to_anchor=(1, 1), fontsize = (self.fontsize-4), markerscale=5) #, loc = 'upper left'
             ax.legend(loc = 'lower right', fontsize = (self.fontsize-4), markerscale=5) 
+
+    def dqdv_vc_comparison_both(self): #this function works with editing to the raw data files to allow biologic and neware to work together. Need to to update read me with how this works!
+        """
+        Generates a plot with specific cycle datasets listed in the folder_path.
+        """
+        files = self._get_file_list()
+        print("Files to be plotted:", files)
+
+        palette = sns.color_palette("Dark2", len(files))  # Choose a palette and set number of colors
+
+        plt.figure(figsize=self.figsize)
+        #fig, ax = plt.subplots(figsize=self.figsize)
+
+        for idx, file in enumerate(files):
+            path = os.path.join(self.folder_path, file)
+            # Check if the file has a header (skip_header_value = 1 means it has a header)
+            skip_header_value = self.process_df.check_file_header_present(path)
+            #df = self.process_df.remove_large_voltage_values(df)
+            try:
+            # Read the file using pandas, with handling for header
+                if skip_header_value == 0:
+                    df = pd.read_csv(path, header=None, encoding='utf-8')  # No header
+                else:
+                    df = pd.read_csv(path, encoding='utf-8')  # Header present
+            except UnicodeDecodeError:
+                try:
+                    # Try reading with a different encoding if UnicodeDecodeError occurs
+                    if skip_header_value == 0:
+                        df = pd.read_csv(path, header=0, encoding='latin1')
+                    else:
+                        df = pd.read_csv(path, encoding='latin1')
+                except UnicodeDecodeError as e:
+                    print(f"Error reading {path} with both UTF-8 and Latin1 encoding: {e}")
+                    continue
+            
+            x = df.iloc[1:,1].astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
+            y = df.iloc[1:,0].astype(float)
+            plt.scatter(x, y, s = 1, color=palette[idx], ) #label="dQ/dV vs Voltage", 
+        plt.ylabel("Voltage (V)", fontsize = self.fontsize)
+        plt.xlabel("Specific Discharge Capacity (mAh/g)", fontsize = self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(loc = "center right", fontsize = self.fontsize - 4 , labels = self.legend_labels, markerscale=5) # bbox_to_anchor = (1,1)
+        #ax.legend(loc = 'lower right', fontsize = (self.fontsize-4), ncol=2)
+        #plt.grid(True)
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        #plt.show()

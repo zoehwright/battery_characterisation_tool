@@ -311,7 +311,7 @@ class dQdVPlotter:
             
             x = df.iloc[1:,0].astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
             y = df.iloc[1:,1].astype(float)
-            plt.plot(x, y, linewidth = 1, color=palette[idx]) #label="dQ/dV vs Voltage", 
+            plt.plot(x, y, linewidth=1, color=palette[idx]) #label="dQ/dV vs Voltage", 
         plt.xlabel("Ewe/V", fontsize = self.fontsize)
         plt.ylabel("dQ/dV(mAh/V)", fontsize = self.fontsize)
         plt.xlim(self.xlim[0], self.xlim[1])
