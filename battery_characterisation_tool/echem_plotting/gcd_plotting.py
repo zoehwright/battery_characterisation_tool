@@ -77,6 +77,13 @@ class GCDPlotting:
 
         #self.df.head()
         #print(self.df)
+
+     def _get_file_list(self):
+        import os
+        if self.folder_path and os.path.isdir(self.folder_path):
+            return [os.path.join(self.folder_path, file) for file in os.listdir(self.folder_path) if file.endswith('.csv')]
+        else:
+            raise ValueError("Invalid folder path provided.")
         
      def count_neware_voltage_columns(self):
         self.df.columns.str.startswith('Spec. Cap.(mAh/g)').sum()
@@ -167,8 +174,8 @@ class GCDPlotting:
         charge_data = df[df["charge_discharge"] == 1]
         discharge_data = df[df["charge_discharge"] == -1]
 
-        charge_color = "darkslategray" #sns.color_palette("Blue") #, n_colors=1)[-1]    
-        discharge_color = "lightseagreen" #sns.color_palette("Reds", n_colors=1)[-1]
+        charge_color = "darkcyan" #sns.color_palette("Blue") #, n_colors=1)[-1] #"darkslategray"
+        discharge_color = "darkcyan" #sns.color_palette("Reds", n_colors=1)[-1] #"lightseagreen"
 
         x_charge, x_discharge = charge_data["Specific Capacity mAh/g"], discharge_data["Specific Capacity mAh/g"]
         y_charge, y_discharge = charge_data["Ewe/V"], discharge_data["Ewe/V"]
@@ -225,3 +232,236 @@ class GCDPlotting:
         ax.set_title(label=self.plot_title, fontsize=self.fontsize)
         #ax.legend(bbox_to_anchor=(1, 0.8), fontsize = self.fontsize, labels = self.legend_labels) #, loc = 'lower left'
 
+     def speccap_cycle_neware(self):
+        
+        self.df = pd.read_csv(self.file_path, header=0)
+
+        spec_cap_columns = [col for col in self.df.columns if col.startswith("Spec. Cap.")]
+        cycle_columns = [col for col in self.df.columns if col.startswith("Cycle Index")]
+        print(spec_cap_columns)
+        print(cycle_columns)
+        #import pdb
+        #pdb.set_trace()
+        processed_df = self.df.groupby('Cycle Index')['Spec. Cap.(mAh/g)'].max().reset_index()
+        plt.figure(figsize=self.figsize) # 10,6
+        plt.scatter(processed_df[cycle_columns], processed_df[spec_cap_columns], s=2)
+
+        # Customize the plot
+        plt.ylabel('Specific Capacity (mAh/g)', fontsize = self.fontsize)
+        plt.xlabel('Cycle Index', fontsize = self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        #plt.legend(bbox_to_anchor=(1, 1), fontsize = self.fontsize, labels = self.legend_labels) #, loc = 'lower left'
+        #plt.grid(True)
+     """
+     def speccap_cycle_neware_folder(self, folder_path):
+        # Initialize the plot
+        plt.figure(figsize=self.figsize)  # Example: (10, 6)
+        
+        for file_path in self.file_list:
+            print(f"Processing file: {file_path}")
+            try:
+                # Read the CSV file
+                df = pd.read_csv(file_path)
+                
+                # Extract columns
+                spec_cap_columns = [col for col in df.columns if col.startswith("Spec. Cap.")]
+                cycle_columns = [col for col in df.columns if col.startswith("Cycle Index")]
+                
+                if spec_cap_columns and cycle_columns:
+                    # Process and plot
+                    processed_df = df.groupby(cycle_columns[0])[spec_cap_columns[0]].max().reset_index()
+                    plt.scatter(
+                        processed_df[cycle_columns[0]],
+                        processed_df[spec_cap_columns[0]],
+                        s=2 #, label=os.path.basename(file_path)
+                    )
+                else:
+                    print(f"Skipped file {file_path}: Required columns not found.")
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+
+        # Customize the plot
+        plt.ylabel('Specific Capacity (mAh/g)', fontsize=self.fontsize)
+        plt.xlabel('Cycle Index', fontsize=self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(bbox_to_anchor=(1, 1), fontsize = self.fontsize, labels = self.legend_labels)
+        plt.grid(True)
+        plt.show()
+     """
+     def speccap_cycle_neware_folder(self):
+    # Initialize the plot
+        plt.figure(figsize=self.figsize)  # Example: (10, 6)
+
+        colors = sns.color_palette("Dark2", len(self.file_list))
+        
+        for idx, file_path in enumerate(self.file_list):
+            print(f"Processing file: {file_path}")
+            try:
+                # Read the CSV file
+                df = pd.read_csv(file_path)
+                
+                # Extract columns
+                spec_cap_columns = [col for col in df.columns if col.startswith("Spec. Cap.")]
+                cycle_columns = [col for col in df.columns if col.startswith("Cycle Index")]
+                
+                if spec_cap_columns and cycle_columns:
+                    # Process and plot
+                    processed_df = df.groupby(cycle_columns[0])[spec_cap_columns[0]].max().reset_index()
+                    plt.scatter(
+                        processed_df[cycle_columns[0]],
+                        processed_df[spec_cap_columns[0]],
+                        s=10, #, label=os.path.basename(file_path)
+                        color=colors[idx]
+                    )
+                else:
+                    print(f"Skipped file {file_path}: Required columns not found.")
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+
+        # Customize the plot
+        plt.ylabel('Specific Capacity (mAh/g)', fontsize=self.fontsize)
+        plt.xlabel('Cycle Index', fontsize=self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(bbox_to_anchor=(1, 1), fontsize=self.fontsize-4, labels=self.legend_labels, ncol =2)
+        #plt.grid(True)
+        plt.show()
+
+     def specEnergy_cycle_neware_folder(self):
+    # Initialize the plot
+        plt.figure(figsize=self.figsize)  # Example: (10, 6)
+
+        colors = sns.color_palette("Dark2", len(self.file_list))
+        
+        for idx, file_path in enumerate(self.file_list):
+            print(f"Processing file: {file_path}")
+            try:
+                # Read the CSV file
+                df = pd.read_csv(file_path)
+                
+                # Extract columns
+                spec_energy_columns = [col for col in df.columns if col.startswith("Spec. Energy(mWh/g)")]
+                cycle_columns = [col for col in df.columns if col.startswith("Cycle Index")]
+                
+                if spec_energy_columns and cycle_columns:
+                    # Process and plot
+                    processed_df = df.groupby(cycle_columns[0])[spec_energy_columns[0]].max().reset_index()
+                    plt.scatter(
+                        processed_df[cycle_columns[0]],
+                        processed_df[spec_energy_columns[0]],
+                        s=10, #, label=os.path.basename(file_path)
+                        color=colors[idx]
+                    )
+                else:
+                    print(f"Skipped file {file_path}: Required columns not found.")
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+
+        # Customize the plot
+        plt.ylabel('Specific Energy (mWh/g)', fontsize=self.fontsize)
+        plt.xlabel('Cycle Index', fontsize=self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(bbox_to_anchor=(1, 1), fontsize=self.fontsize-4, labels=self.legend_labels, ncol =2)
+        #plt.grid(True)
+        plt.show()
+
+     def specEnergy_cycle_neware_folder_withoutformation(self):
+    # Initialize the plot
+        plt.figure(figsize=self.figsize)  # Example: (10, 6)
+
+        colors = sns.color_palette("Dark2", len(self.file_list))
+        
+        for idx, file_path in enumerate(self.file_list):
+            print(f"Processing file: {file_path}")
+            try:
+                # Read the CSV file
+                df = pd.read_csv(file_path)
+                
+                # Extract columns
+                spec_energy_columns = [col for col in df.columns if col.startswith("Spec. Energy(mWh/g)")]
+                cycle_columns = [col for col in df.columns if col.startswith("Cycle Index")]
+                
+                if spec_energy_columns and cycle_columns:
+                    # Process and plot
+                    processed_df = df.groupby(cycle_columns[0])[spec_energy_columns[0]].max().reset_index()
+                    
+                    # Subtract 5 from every cycle index value
+                    processed_df[cycle_columns[0]] = processed_df[cycle_columns[0]] - 5
+                    
+                    plt.scatter(
+                        processed_df[cycle_columns[0]],
+                        processed_df[spec_energy_columns[0]],
+                        s=10, #, label=os.path.basename(file_path)
+                        color=colors[idx]
+                    )
+                else:
+                    print(f"Skipped file {file_path}: Required columns not found.")
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+
+        # Customize the plot
+        plt.ylabel('Specific Energy (mWh/g)', fontsize=self.fontsize)
+        plt.xlabel('Cycle Index', fontsize=self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(bbox_to_anchor=(1, 1), fontsize=self.fontsize-4, labels=self.legend_labels, ncol=2) #loc = 'lower left',  
+        #plt.grid(True)
+        plt.show()
+
+     def speccap_cycle_neware_folder_withoutformation(self):
+        # Initialize the plot
+        plt.figure(figsize=self.figsize)  # Example: (10, 6)
+
+        colors = sns.color_palette("Dark2", len(self.file_list))
+        
+        for idx, file_path in enumerate(self.file_list):
+            print(f"Processing file: {file_path}")
+            try:
+                # Read the CSV file
+                df = pd.read_csv(file_path)
+                
+                # Extract columns
+                spec_cap_columns = [col for col in df.columns if col.startswith("Spec. Cap.")]
+                cycle_columns = [col for col in df.columns if col.startswith("Cycle Index")]
+                
+                if spec_cap_columns and cycle_columns:
+                    # Process and plot
+                    processed_df = df.groupby(cycle_columns[0])[spec_cap_columns[0]].max().reset_index()
+                    
+                    # Subtract 5 from every cycle index value
+                    processed_df[cycle_columns[0]] = processed_df[cycle_columns[0]] - 5
+                    
+                    plt.scatter(
+                        processed_df[cycle_columns[0]],
+                        processed_df[spec_cap_columns[0]],
+                        s=10, #, label=os.path.basename(file_path)
+                        color=colors[idx]
+                    )
+                else:
+                    print(f"Skipped file {file_path}: Required columns not found.")
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+
+        # Customize the plot
+        plt.ylabel('Specific Capacity (mAh/g)', fontsize=self.fontsize)
+        plt.xlabel('Cycle Index', fontsize=self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        plt.legend(bbox_to_anchor=(1, 1), fontsize=self.fontsize-4, labels=self.legend_labels, ncol=2) #loc = 'lower left', 
+        #plt.grid(True)
+        plt.show()

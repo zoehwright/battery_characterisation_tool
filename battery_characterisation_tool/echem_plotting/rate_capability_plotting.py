@@ -65,7 +65,7 @@ class RateCapabilityPlotting:
             ax.scatter(x, y, marker=markers[i], color=colours[i], label=self.legend_labels[i], s=self.marker_size)  #label=self.dataset_name)
         ax.set_xlabel("Cycle Number", fontsize = self.fontsize+2)
         ax.set_ylabel("Specific Discharge Capacity (mAh/g)", fontsize=self.fontsize+4)
-        plt.title(self.plot_title, fontsize = self.fontsize)
+        plt.title(self.plot_title, fontsize = self.fontsize+2)
         text_height = df["Specific Discharge Capacity mAh/g_0"].max()+15
         text_height_position = text_height - 7.5
         ax.text(0, text_height_position, "C/10", fontsize=self.fontsize-3)

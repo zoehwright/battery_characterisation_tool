@@ -109,6 +109,44 @@ class CapacityFadePlotting:
         ax1.set_ylim(self.ylim[0], self.ylim[1])
         ax2.set_ylim(0, 105)
 
+    def capacity_fade_ce_neware(self) -> np.array:
+        """
+        Generates a plot for capacity fade with Coulombic efficiency.
+
+        This method reads capacity data from the specified file path and active mass,
+        processes the data to extract the cycle number, specific discharge capacity,
+        and Coulombic efficiency, and then generates a scatter plot for visual analysis.
+
+        Returns:
+            np.array: Processed data array.
+        """
+        fig, ax1 = plt.subplots(figsize=self.figsize)
+        df = pd.read_csv(self.file_path, header=0)
+        x = df['Cycle Index']
+        y1 = df['DChg. Spec. Cap.(mAh/g)']
+        y2 = df['Chg.-DChg. Eff']
+
+        ax2 = ax1.twinx()
+
+        ax1.scatter(x, y1, marker='o', color='deepskyblue', label=self.dataset_name)
+        ax2.scatter(x, y2, marker='o', color='hotpink', label="Coulombic efficiency")
+
+        ax1.set_xlabel("Cycle Number", fontsize = self.fontsize)
+        ax1.set_ylabel("Specific Discharge Capacity (mAh/g)", fontsize = self.fontsize)
+        ax2.set_ylabel("Coulombic Efficiency %", color='hotpink', fontsize=self.fontsize)
+        
+        plt.title(self.plot_title, fontsize=self.fontsize)
+        ax1.legend(bbox_to_anchor=(1.4, 1), fontsize = self.fontsize) #, loc = 'lower left'
+
+        plt.xticks(fontsize=self.fontsize)
+        plt.yticks(fontsize=self.fontsize)
+        ax2.tick_params(axis='y', labelsize=16)
+        ax1.tick_params(axis='y', labelsize=16)
+        ax1.tick_params(axis='x', labelsize=16)
+        ax1.set_xlim(self.xlim[0], self.xlim[1])
+        ax1.set_ylim(self.ylim[0], self.ylim[1])
+        ax2.set_ylim(0, 105)
+
     def _get_file_list(self) -> list:
         """
         Retrieves a list of valid files in the specified folder path.
@@ -378,3 +416,147 @@ class CapacityFadePlotting:
         #plt.grid(True)
         plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
         #plt.show()
+
+    def vc_cycle_comparison_neware(self) -> np.array:
+        """
+        Generates a plot comparing voltage curves across a specific cycle.
+
+        This method processes voltage-capacity data from the specified file path and active mass list,
+        removes large voltage values, and generates a scatter plot comparing the voltage curves
+        for each dataset.
+
+        Returns:
+            np.array: Processed data array.
+        """
+
+        fig, ax = plt.subplots(figsize= self.figsize)
+        self.df = pd.read_csv(self.file_path, header=1)
+        self.df = self.process_df.remove_large_voltage_values_2_4V(self.df)
+        length = len(self.df.columns) // 2
+        
+        for i in range(length):
+            x = self.df.iloc[:, 2*i]
+            y = self.df.iloc[:, 2*i+1]
+
+            colours = sns.color_palette('Dark2', n_colors=length)
+            # TODO: Add in support for colour continuity of larger series
+            #ax.scatter(x, y, color=colours[i], label=self.legend_labels[i], s=10, marker='_')
+            ax.plot(x, y, color=colours[i], label=self.legend_labels[i], linewidth = 2)
+            ax.set_xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
+            ax.set_ylabel("Voltage (V)", fontsize=self.fontsize)
+            ax.tick_params(labelsize=10)
+            plt.xlim(self.xlim[0], self.xlim[1])
+            plt.ylim(self.ylim[0], self.ylim[1])
+            plt.title(self.plot_title, fontsize = self.fontsize)
+            ax.legend(bbox_to_anchor=(0.75, 0.7), fontsize = (self.fontsize-4), markerscale=5) #, loc = 'upper left'
+            #ax.legend(loc = 'center right', fontsize = (self.fontsize-4), markerscale=5) 
+
+    def capacity_fade_neware_percentage(self, folder_path, file_names, labels): #(self, folder_path: str, file_names: list, labels: list):
+        """
+        Generates a plot for capacity fade from multiple datasets stored as CSV files.
+
+        This method reads CSV files from the specified folder, processes them to extract
+        capacity fade data, and generates a scatter plot with different colors for each dataset.
+
+        Args:
+            folder_path (str): Path to the folder containing the CSV files.
+            file_names (list): A list of CSV file names (strings) to be loaded.
+            labels (list): A list of labels for each dataset to be used in the plot legend.
+
+        Returns:
+            None: Displays the plot.
+        """
+        # Create an empty list to hold the dataframes
+        datasets = []
+
+        # Load each CSV file into a DataFrame and append to datasets list
+        for file_name in file_names:
+            file_path = os.path.join(folder_path, file_name)  # Construct full file path
+            df = pd.read_csv(file_path)  # Read CSV into DataFrame
+            datasets.append(df)  # Add DataFrame to the list
+
+        # Now plot the datasets
+        length = len(datasets)
+        fig, ax = plt.subplots(figsize=(7, 6))
+
+        # Iterate over each dataset and plot it
+        for i, df in enumerate(datasets):
+            x = df['Cycle Index']
+            y = df['DChg. Spec. Cap.(mAh/g)']
+
+            # Use seaborn color palette to differentiate each dataset
+            colours = sns.color_palette('Dark2', n_colors=length)
+            ax.scatter(x, y, marker='o', color=colours[i], label=labels[i], s=15)
+
+        # Set axis labels, title, and legend
+        ax.set_xlabel("Cycle Number", fontsize=self.fontsize)
+        ax.set_ylabel("Specific Discharge Capacity mAh/g", fontsize=self.fontsize)
+        plt.title(self.plot_title, fontsize=self.fontsize)
+
+        # Legend and other aesthetic settings
+        ax.legend(loc='lower right', fontsize=(self.fontsize-4), ncol=2)
+        plt.xticks(fontsize=self.fontsize)
+        plt.yticks(fontsize=self.fontsize)
+        ax.tick_params(labelsize=10)
+
+        # Set axis limits if needed
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+    
+    
+    def dchg_spec_cap_remaining_neware_folder(self):
+        # Initialize the plot
+        plt.figure(figsize=self.figsize)  # Example: (10, 6)
+
+        colors = sns.color_palette("Dark2", len(self.file_list))
+        
+        for idx, file_path in enumerate(self.file_list):
+            print(f"Processing file: {file_path}")
+            try:
+                # Read the CSV file
+                df = pd.read_csv(file_path)
+                
+                # Extract relevant columns
+                dchg_spec_cap_columns = [col for col in df.columns if col.startswith("DChg. Spec. Cap.")]
+                cycle_columns = [col for col in df.columns if col.startswith("Cycle Index")]
+                
+                if dchg_spec_cap_columns and cycle_columns:
+                    # Process data
+                    processed_df = df.groupby(cycle_columns[0])[dchg_spec_cap_columns[0]].max().reset_index()
+                    
+                    # Adjust for formation cycles if needed
+                    processed_df[cycle_columns[0]] = processed_df[cycle_columns[0]] - 5
+                    
+                    # Get the max discharge specific capacity for Cycle 1
+                    original_cycle_1_cap = processed_df[dchg_spec_cap_columns[0]].iloc[0]
+                    
+                    # Calculate remaining capacity percentage
+                    processed_df['Remaining Capacity (%)'] = (
+                        (processed_df[dchg_spec_cap_columns[0]] / original_cycle_1_cap) * 100
+                    )
+                    
+                    # Plot the remaining capacity percentage
+                    plt.scatter(
+                        processed_df[cycle_columns[0]], 
+                        processed_df['Remaining Capacity (%)'], 
+                        s=10, 
+                        label=os.path.basename(file_path),
+                        color=colors[idx]
+                    )
+                else:
+                    print(f"Skipped file {file_path}: Required columns not found.")
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+        
+        # Customize the plot
+        plt.ylabel('Discharge Capacity Fade (%)', fontsize=self.fontsize)
+        plt.xlabel('Cycle Index', fontsize=self.fontsize)
+        plt.xlim(self.xlim[0], self.xlim[1])
+        plt.ylim(self.ylim[0], self.ylim[1])
+        plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
+        plt.title(label=self.plot_title, fontsize=self.fontsize)
+        #plt.legend(bbox_to_anchor=(1, 1), fontsize=self.fontsize-4, labels=self.legend_labels, ncol=2)
+        plt.legend(loc='lower left', fontsize=(self.fontsize-4), labels=self.legend_labels, ncol=2)
+        #plt.grid(True)
+        plt.show()
+

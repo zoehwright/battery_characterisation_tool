@@ -107,6 +107,18 @@ class ProcessDataframe:
             df[[header, spec_capacity_header]] = df.iloc[:, [column_index, column_index-1]].drop(index=indexes)
         
         return df
+    
+    def remove_large_voltage_values_2_4V(self,
+                                    df) -> pd.DataFrame:
+        df_headers = df.columns.tolist()
+        df_headers = [column for column in df_headers if column.startswith(("Voltage", "Ewe"))]
+        for header in df_headers:
+            indexes = df.index[df[header] > 3.97].tolist()
+            column_index = df.columns.get_loc(header)
+            spec_capacity_header = df.columns[column_index-1]
+            df[[header, spec_capacity_header]] = df.iloc[:, [column_index, column_index-1]].drop(index=indexes)
+        
+        return df
         
     def process_dqdv_neware(self,
                             file_path,

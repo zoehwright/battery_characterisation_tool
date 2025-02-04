@@ -82,10 +82,10 @@ class dQdVPlotter:
             path = os.path.join(self.folder_path, file)
             skip_header_value = self.process_df.check_file_header_present(path)
             try:
-                data = np.loadtxt(path, encoding='utf-8', skiprows=skip_header_value)
+                data = np.loadtxt(path, encoding='utf-8', skiprows=1)
             except UnicodeDecodeError:
                 try:
-                    data = np.loadtxt(path, encoding='latin1', skiprows=skip_header_value)
+                    data = np.loadtxt(path, encoding='latin1', skiprows=1)
                 except UnicodeDecodeError as e:
                     print(f"Error reading {path}: {e}")
                     continue
@@ -93,8 +93,8 @@ class dQdVPlotter:
             x = data[:,2]
             y = data[:,4]
             #print(df)
-            #ax.scatter(x, y, label=file, color=palette[idx], marker='o', s=5) #, markerfacecolor ="none", lw=0.7) 
-            ax.plot(x, y, label=file, color=palette[idx], linewidth = 1)  #, markerfacecolor ="none", lw=0.7
+            ax.scatter(x, y, label=file, color=palette[idx], marker='o', s=5) #, markerfacecolor ="none", lw=0.7) 
+            #ax.plot(x, y, label=file, color=palette[idx], linewidth = 0.1)  #, markerfacecolor ="none", lw=0.7
         # plt.title(label=self.plot_title, fontsize=self.fontsize) 
         ax.set_title(label=self.plot_title, fontsize=self.fontsize)
         ax.set_xlabel("Ewe/V", fontsize=self.fontsize)
@@ -205,13 +205,14 @@ class dQdVPlotter:
             
             x = df.iloc[1:,0].astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
             y = df.iloc[1:,1].astype(float)
-            plt.plot(x, y, linewidth = 1, color=palette[idx]) #label="dQ/dV vs Voltage", 
+            plt.plot(x, y, linewidth = 1, color=palette[idx]) #label="dQ/dV vs Voltage"
+            #plt.scatter(x, y, color=palette[idx],  marker='o', s=5)
         plt.xlabel("Ewe/V", fontsize = self.fontsize)
         plt.ylabel("dQ/dV(mAh/V)", fontsize = self.fontsize)
         plt.xlim(self.xlim[0], self.xlim[1])
         plt.ylim(self.ylim[0], self.ylim[1])
         plt.title(label=self.plot_title, fontsize=self.fontsize)
-        plt.legend(loc = "upper left", fontsize = self.fontsize - 4 , labels = self.legend_labels) # bbox_to_anchor = (1,1)
+        plt.legend(loc = "upper left", fontsize = self.fontsize - 4 , labels = self.legend_labels, ncol = 2) # bbox_to_anchor = (1,1)
         #plt.grid(True)
         plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
         #plt.show()
@@ -295,22 +296,23 @@ class dQdVPlotter:
             try:
             # Read the file using pandas, with handling for header
                 if skip_header_value == 0:
-                    df = pd.read_csv(path, header=None, encoding='utf-8')  # No header
+                    df = pd.read_csv(path, header=None, encoding='utf-8', delimiter = '\s+')  # No header
                 else:
                     df = pd.read_csv(path, encoding='utf-8')  # Header present
             except UnicodeDecodeError:
                 try:
                     # Try reading with a different encoding if UnicodeDecodeError occurs
                     if skip_header_value == 0:
-                        df = pd.read_csv(path, header=0, encoding='latin1')
+                        df = pd.read_csv(path, header=0, encoding='latin1', delimiter = '\s+')
                     else:
-                        df = pd.read_csv(path, encoding='latin1')
+                        df = pd.read_csv(path, encoding='latin1', delimiter = '\s+')
                 except UnicodeDecodeError as e:
                     print(f"Error reading {path} with both UTF-8 and Latin1 encoding: {e}")
                     continue
+                print(df.columns)
             
-            x = df.iloc[1:,0].astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
-            y = df.iloc[1:,1].astype(float)
+            x = df["Ewe/V"] #.astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
+            y = df["d(Q-Qo)/dE/mA.h/V"] #.astype(float)
             plt.plot(x, y, linewidth=1, color=palette[idx]) #label="dQ/dV vs Voltage", 
         plt.xlabel("Ewe/V", fontsize = self.fontsize)
         plt.ylabel("dQ/dV(mAh/V)", fontsize = self.fontsize)
