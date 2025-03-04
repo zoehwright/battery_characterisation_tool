@@ -196,6 +196,7 @@ class GCDPlotting:
         fig, ax = plt.subplots(figsize=self.figsize)
         df = self.process_df.process_voltage_capacity_df(file_path=self.file_path, 
                                                        active_mass=self.active_mass)
+        #df = self.process_df.remove_large_voltage_values(self.df)
 
         charge_data = df[df["charge_discharge"] == 1]
         discharge_data = df[df["charge_discharge"] == -1]
@@ -204,6 +205,10 @@ class GCDPlotting:
         # y_charge, y_discharge = charge_data["Ewe/V"], discharge_data["Ewe/V"]
 
         cycle_numbers = df["cycle number"].unique()
+         # Limit to maximum of 100 cycles
+        cycle_numbers = cycle_numbers[cycle_numbers <= 100]
+        # Select cycles between 5 and 105
+        #cycle_numbers = cycle_numbers[(cycle_numbers >= 5) & (cycle_numbers <= 105)]
         n = len(cycle_numbers)
         blues = sns.dark_palette("darkcyan", n_colors=n, as_cmap=False)
         #blues = [colors.rgb2hex(i) for i in blues]
@@ -219,14 +224,16 @@ class GCDPlotting:
                 y_discharge_filtered = discharge_data[discharge_data["cycle number"] == i]["Ewe/V"]
                 import pdb
                 #pdb.set_trace()
-                ax.scatter(x_charge_filtered, y_charge_filtered, marker='o', s=0.05, color=blues[int(i)])  
-                ax.scatter(x_discharge_filtered, y_discharge_filtered, marker='o', s=0.05, color=reds[int(i)])
+                #ax.scatter(x_charge_filtered, y_charge_filtered, marker='o', s=0.05, color=blues[int(i)])  
+                #ax.scatter(x_discharge_filtered, y_discharge_filtered, marker='o', s=0.05, color=reds[int(i)])
+                ax.plot(x_charge_filtered, y_charge_filtered, linewidth = 1, color=blues[int(i - 5)])  
+                ax.plot(x_discharge_filtered, y_discharge_filtered, linewidth = 1, color=reds[int(i - 5)])
 
         ax.set_xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
         ax.set_ylabel("Voltage (V)", fontsize = self.fontsize)
         ax.set_xlim(self.xlim[0], self.xlim[1])
         ax.set_ylim(self.ylim[0], self.ylim[1])
-        ax.set_xticks(np.arange(0, 199, 25))
+        #ax.set_xticks(np.arange(0, 199, 25))
         ax.tick_params(axis='both', which='major', labelsize=self.fontsize)
         #plt.tick_params(axis='both', which='major', labelsize=self.fontsize)
         ax.set_title(label=self.plot_title, fontsize=self.fontsize)
@@ -302,9 +309,11 @@ class GCDPlotting:
         
         for idx, file_path in enumerate(self.file_list):
             print(f"Processing file: {file_path}")
+            
             try:
                 # Read the CSV file
                 df = pd.read_csv(file_path)
+                
                 
                 # Extract columns
                 spec_cap_columns = [col for col in df.columns if col.startswith("Spec. Cap.")]
@@ -434,7 +443,7 @@ class GCDPlotting:
                 df = pd.read_csv(file_path)
                 
                 # Extract columns
-                spec_cap_columns = [col for col in df.columns if col.startswith("Spec. Cap.")]
+                spec_cap_columns = [col for col in df.columns if col.startswith("Spec. Cap.(mAh/g)")]
                 cycle_columns = [col for col in df.columns if col.startswith("Cycle Index")]
                 
                 if spec_cap_columns and cycle_columns:
@@ -456,7 +465,7 @@ class GCDPlotting:
                 print(f"Error processing file {file_path}: {e}")
 
         # Customize the plot
-        plt.ylabel('Specific Capacity (mAh/g)', fontsize=self.fontsize)
+        plt.ylabel('Specific Discharge Capacity (mAh/g)', fontsize=self.fontsize)
         plt.xlabel('Cycle Index', fontsize=self.fontsize)
         plt.xlim(self.xlim[0], self.xlim[1])
         plt.ylim(self.ylim[0], self.ylim[1])

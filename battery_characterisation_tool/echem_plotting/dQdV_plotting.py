@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.colors as colors 
 import os
 import glob 
+from scipy.signal import savgol_filter
 
 from typing import Optional
 from battery_characterisation_tool.echem_plotting.process_dataframe import ProcessDataframe
@@ -15,6 +16,7 @@ class dQdVPlotter:
     def __init__(
             self, 
             file_path: Optional[str] = "",
+            filter_file: Optional[str] = "",
             dataset_name: Optional[str] = "",
             plot_title: Optional[str] = "",
             legend_labels: Optional[list] = [],
@@ -25,9 +27,11 @@ class dQdVPlotter:
             xlim: Optional[tuple] = (-0.5, 5),
             ylim: Optional[tuple] = (-15, 15),
             fontsize: Optional[int] = 16,
+            cycle_number: Optional[int] = 0,
         ):
         
             self.file_path = file_path
+            self.filter_file = filter_file
             self.dataset_name = dataset_name
             self.plot_title = plot_title
             self.legend_labels = legend_labels
@@ -41,6 +45,7 @@ class dQdVPlotter:
             if folder_path != []:    
                 self.file_list = self._get_file_list()
             self.process_df = ProcessDataframe()
+            self.cycle_number = cycle_number
     """
     def _get_file_list(self) -> str:
         
@@ -115,6 +120,59 @@ class dQdVPlotter:
         #plt.rcParams.update({'font.size': 10})  
         #plt.show()
 
+
+
+    def dqdv_biologic_cycle_comparison(self, cycle_number):
+        """
+        Generates a plot for the specified cycle using datasets in folder_path.
+        """
+        files = self._get_file_list()
+        palette = sns.color_palette("Dark2", len(files))  
+
+        fig, ax = plt.subplots(figsize=self.figsize)
+
+        for idx, file in enumerate(files):
+            path = os.path.join(self.folder_path, file)
+            
+            # Determine if a header is present
+            skip_header_value = self.process_df.check_file_header_present(path)
+            
+            try:
+                df = pd.read_csv(path, sep="\t", skiprows=skip_header_value, encoding="utf-8")
+            except UnicodeDecodeError:
+                try:
+                    df = pd.read_csv(path, sep="\t", skiprows=skip_header_value, encoding="latin1")
+                except UnicodeDecodeError as e:
+                    print(f"Error reading {path}: {e}")
+                    continue
+            
+            # Ensure required columns exist
+            required_columns = ["Ewe/V", "d(Q-Qo)/dE/mA.h/V", "cycle number"]
+            if not all(col in df.columns for col in required_columns):
+                print(f"Skipping {file}: Missing required columns.")
+                continue
+            
+            # Filter for specified cycle
+            df_specific_cycle = df[df["cycle number"] == cycle_number]
+            if df_specific_cycle.empty:
+                print(f"Skipping {file}: No data for cycle {cycle_number}")
+                continue
+
+            #ax.plot(df_specific_cycle["Ewe/V"], df_specific_cycle["d(Q-Qo)/dE/mA.h/V"].rolling(4).mean(), label=file, color=palette[idx], linewidth=1)
+            ax.scatter(df_specific_cycle["Ewe/V"], df_specific_cycle["d(Q-Qo)/dE/mA.h/V"], label=file, color=palette[idx], s= 10, marker='_')
+
+        ax.set_title(self.plot_title, fontsize=self.fontsize)
+        ax.set_xlabel("Ewe/V", fontsize=self.fontsize)
+        ax.set_ylabel("d(Q-Qo)/dE/mA.h/V", fontsize=self.fontsize)
+        ax.tick_params(axis='both', which='major', labelsize=18)
+        ax.set_xlim(self.xlim[0], self.xlim[1])
+        ax.set_ylim(self.ylim[0], self.ylim[1])
+        ax.grid(visible=None)
+        ax.legend(loc="upper left", fontsize=self.fontsize, labels=self.legend_labels) #bbox_to_anchor=(1, 1), 
+        plt.tight_layout()
+        plt.show()
+    
+    
     def dqdv_single_cycle(self):
 
         fig, ax = plt.subplots(figsize=self.figsize)
@@ -185,6 +243,7 @@ class dQdVPlotter:
             path = os.path.join(self.folder_path, file)
             # Check if the file has a header (skip_header_value = 1 means it has a header)
             skip_header_value = self.process_df.check_file_header_present(path)
+            
 
             try:
             # Read the file using pandas, with handling for header
@@ -202,10 +261,30 @@ class dQdVPlotter:
                 except UnicodeDecodeError as e:
                     print(f"Error reading {path} with both UTF-8 and Latin1 encoding: {e}")
                     continue
-            
+            df = self.process_df.process_dqdv_neware_zero_values(path, df)
             x = df.iloc[1:,0].astype(float) #.astype(float) is used to ensure that the data in the selected columns (x and y) are explicitly converted to numeric values (floating-point numbers).
             y = df.iloc[1:,1].astype(float)
-            plt.plot(x, y, linewidth = 1, color=palette[idx]) #label="dQ/dV vs Voltage"
+
+            if file == self.filter_file:
+                window_length = min(7, len(y)//2 * 2 + 1)  # Ensure window length is odd and not larger than the data
+                polyorder = 3  # Polynomial order for fitting
+                if len(y) > window_length:  # Apply filter only if data length > window length
+                    y = savgol_filter(y, window_length, polyorder)    
+                
+            plt.plot(x, y, linewidth=1.5, color=palette[idx])
+            
+            # Apply Savitzky-Golay filter for smoothing
+            #window_length = min(7, len(y)//2 * 2 + 1)  # Ensure window length is odd and not larger than the data
+            #polyorder = 3  # Polynomial order for fitting
+            #if len(y) > window_length:  # Apply filter only if data length > window length
+            #    y_smooth = savgol_filter(y, window_length, polyorder)
+            #else:
+            #    y_smooth = y  # If too few points, keep original data
+
+            #plt.plot(x, y_smooth, linewidth=1.5, color=palette[idx]) #linewidth=1 s=10
+            
+            #log_y = np.log(y)
+            #plt.plot(x, y, linewidth = 2, color=palette[idx]) #label="dQ/dV vs Voltage"
             #plt.scatter(x, y, color=palette[idx],  marker='o', s=5)
         plt.xlabel("Ewe/V", fontsize = self.fontsize)
         plt.ylabel("dQ/dV(mAh/V)", fontsize = self.fontsize)

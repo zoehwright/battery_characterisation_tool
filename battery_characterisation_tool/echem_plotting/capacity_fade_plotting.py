@@ -174,7 +174,7 @@ class CapacityFadePlotting:
             np.array: Processed data array.
         """
         length = len(self.file_list)
-        fig, ax = plt.subplots(figsize=(7,6))
+        fig, ax = plt.subplots(figsize=self.figsize)
         df = self.process_df.process_capacity_fade_df_list(file_paths=self.file_list, 
                                                     active_mass_list=self.active_mass_list)
         for i in range(length):
@@ -182,12 +182,131 @@ class CapacityFadePlotting:
             y = df[f'Specific Discharge Capacity mAh/g_{i}']
 
             colours = sns.color_palette('Dark2', n_colors=length)
-            ax.scatter(x, y, marker='o', color=colours[i], label=self.legend_labels[i], s=15)  #label=self.dataset_name)
+            ax.scatter(x, y, marker='o', color=colours[i], label=self.legend_labels[i], s=10)  #label=self.dataset_name)
             ax.set_xlabel("Cycle Number", fontsize = self.fontsize)
             ax.set_ylabel("Specific Discharge Capacity mAh/g", fontsize=self.fontsize)
             plt.title(self.plot_title, fontsize = self.fontsize)
             
-            ax.legend(loc = 'lower right', fontsize = (self.fontsize-4), ncol=2) #, loc = 'upper left' bbox_to_anchor=(1, 0.55)
+            ax.legend(loc = 'upper right', fontsize = (self.fontsize-4), ncol=3) #, loc = 'upper left' bbox_to_anchor=(1, 0.55)
+            plt.xticks(fontsize=self.fontsize)
+            plt.yticks(fontsize=self.fontsize)
+            ax.tick_params(labelsize=10)
+
+            plt.xlim(self.xlim[0], self.xlim[1])
+            plt.ylim(self.ylim[0], self.ylim[1])
+
+    def capacity_fade_percentage_biologic(self) -> np.array:
+        """
+        Generates a plot for % capacity fade from multiple datasets.
+
+        This method processes a list of file paths and active mass values,
+        extracts capacity fade data, and generates a scatter plot with different
+        colors for each dataset.
+
+        Returns:
+            np.array: Processed data array.
+        """
+        length = len(self.file_list)
+        fig, ax = plt.subplots(figsize=self.figsize)
+        df = self.process_df.process_capacity_fade_df_list(file_paths=self.file_list, 
+                                                    active_mass_list=self.active_mass_list)
+        for i in range(length):
+            cycle_num = df[f'cycle number_{i}']
+            sdc = df[f'Specific Discharge Capacity mAh/g_{i}']
+            #cycle_num= df['Cycle Index']
+            #sdc = df['DChg. Spec. Cap.(mAh/g)']
+
+            if not cycle_num.empty and not sdc.empty:
+                #processed_df = df.groupby(cycle_num[0])[sdc[0]].max().reset_index() 
+                processed_df = df.groupby(f'cycle number_{i}')[f'Specific Discharge Capacity mAh/g_{i}'].max().reset_index()
+                
+                # Get the max discharge specific capacity for Cycle 1
+                #original_cycle_1_cap = processed_df[sdc[0]].iloc[0]
+
+            
+                # Get the max discharge specific capacity for Cycle 1
+                original_cycle_1_cap = processed_df[f'Specific Discharge Capacity mAh/g_{i}'].max() #.iloc[0] - uses first cycle max value. .max() uses overall max value.
+                
+                # Calculate remaining capacity percentage
+                #processed_df['Remaining Capacity (%)'] = (
+                #    (processed_df[sdc[0]] / original_cycle_1_cap) * 100
+                #)
+                processed_df['Remaining Capacity (%)'] = (
+                    (processed_df[f'Specific Discharge Capacity mAh/g_{i}'] / original_cycle_1_cap) * 100
+                )   
+
+            colours = sns.color_palette('Dark2', n_colors=length)
+            #ax.scatter(processed_df[cycle_num[0]], processed_df['Remaining Capacity (%)'], marker='o', color=colours[i], label=self.legend_labels[i], s=10)  #label=self.dataset_name)
+            ax.scatter(processed_df[f'cycle number_{i}'], processed_df['Remaining Capacity (%)'], 
+                       marker='o', color=colours[i], label=self.legend_labels[i], s=10)  
+            ax.set_xlabel("Cycle Number", fontsize = self.fontsize)
+            ax.set_ylabel("Discharge Capacity Fade (%)", fontsize=self.fontsize)
+            plt.title(self.plot_title, fontsize = self.fontsize)
+            
+            ax.legend(loc = 'lower left', fontsize = (self.fontsize-4), ncol=3) #, loc = 'upper left' bbox_to_anchor=(1, 0.55)
+            plt.xticks(fontsize=self.fontsize)
+            plt.yticks(fontsize=self.fontsize)
+            ax.tick_params(labelsize=10)
+
+            plt.xlim(self.xlim[0], self.xlim[1])
+            plt.ylim(self.ylim[0], self.ylim[1])
+
+    def energy_fade(self) -> np.array:
+        """
+        Generates a plot for capacity fade from multiple datasets.
+
+        This method processes a list of file paths and active mass values,
+        extracts capacity fade data, and generates a scatter plot with different
+        colors for each dataset.
+
+        Returns:
+            np.array: Processed data array.
+        """
+        length = len(self.file_list)
+        fig, ax = plt.subplots(figsize=self.figsize)
+
+        # Get the list of DataFrames (passing the file paths and active masses)
+        all_data = self.process_df.process_energy_fade_df_list(file_paths=self.file_list, 
+                                                            active_mass_list=self.active_mass_list)
+        #print("Columns in processed DataFrame:", all_data.columns.tolist())
+
+        # Loop over each DataFrame and plot the data
+        """
+        colours = sns.color_palette('Dark2', n_colors=length)
+        for i, df in enumerate(all_data):
+            x = df['cycle number']
+            y = df['Energy discharge/mW.h/g']
+
+            ax.scatter(x, y, marker='o', color=colours[i], label=self.legend_labels[i], s=10)
+            ax.set_xlabel("Cycle Number", fontsize=self.fontsize)
+            ax.set_ylabel("Specific Energy (Discharge) mW.h/g", fontsize=self.fontsize)
+            ax.set_title(self.plot_title, fontsize=self.fontsize)
+            
+            ax.legend(loc='upper right', fontsize=(self.fontsize - 4), ncol=3)
+            plt.xticks(fontsize=self.fontsize)
+            plt.yticks(fontsize=self.fontsize)
+            ax.tick_params(labelsize=10)
+
+            plt.xlim(self.xlim[0], self.xlim[1])
+            plt.ylim(self.ylim[0], self.ylim[1])
+
+        # You can return the processed data if needed (for now, returning None)
+        return np.array([df[['cycle number', 'Energy discharge/mW.h/g']].values for df in all_data])
+        """
+
+        for i in range(length):
+            x = all_data[f'cycle number_{i}']
+            y = all_data[f'Spec. Energy(mWh/g)_{i}']
+
+            y = y.abs()
+
+            colours = sns.color_palette('Dark2', n_colors=length)
+            ax.scatter(x, y, marker='o', color=colours[i], label=self.legend_labels[i], s=10)
+            ax.set_xlabel("Cycle Number", fontsize=self.fontsize)
+            ax.set_ylabel("Specific Energy (Discharge) mWh/g", fontsize=self.fontsize)
+            ax.set_title(self.plot_title, fontsize=self.fontsize)
+
+            ax.legend(loc='upper right', fontsize=(self.fontsize - 4), ncol=3)
             plt.xticks(fontsize=self.fontsize)
             plt.yticks(fontsize=self.fontsize)
             ax.tick_params(labelsize=10)
@@ -310,27 +429,29 @@ class CapacityFadePlotting:
             np.array: Processed data array.
         """
         length = len(self.active_mass_list)
-        fig, ax = plt.subplots(figsize=(7,6))
+        fig, ax = plt.subplots(figsize=(self.figsize))
         df = self.process_df.process_vc_cycle_comparison_df(file_path=self.file_path, 
                                                     active_mass_list=self.active_mass_list)
         df = self.process_df.remove_large_voltage_values(df)
+        #df = self.process_df.remove_ocv_voltage_values(df)
         for i in range(length):
-            x = df.iloc[:, 2*i]
-            y = df.iloc[:, 2*i+1]
+            x = df.iloc[:, 2*i].rolling(100).mean()
+            y = df.iloc[:, 2*i+1] #.rolling(50).mean()
 
             colours = sns.color_palette('Dark2', n_colors=length)
             # TODO: Add in support for colour continuity of larger series
             #colours = sns.color_palette('Dark2', n_colors=length+3)
             #ax.scatter(x, y, color=colours[i+3], label=self.legend_labels[i], s=10, marker='_')
-            ax.scatter(x, y, color=colours[i], label=self.legend_labels[i], s=10, marker='_')
+            #ax.scatter(x, y, color=colours[i], label=self.legend_labels[i], s=10, marker='_')
+            ax.plot(x, y, color=colours[i], label=self.legend_labels[i], linewidth =1.5)
             ax.set_xlabel("Specific Capacity (mAh/g)", fontsize = self.fontsize)
             ax.set_ylabel("Voltage (V)", fontsize=self.fontsize)
             ax.tick_params(labelsize=10)
             plt.xlim(self.xlim[0], self.xlim[1])
             plt.ylim(self.ylim[0], self.ylim[1])
             plt.title(self.plot_title, fontsize = self.fontsize)
-            ax.legend(bbox_to_anchor=(1, 1), fontsize = (self.fontsize-4), markerscale=5) #, loc = 'upper left'
-            ax.legend(loc = 'lower right', fontsize = (self.fontsize-4), markerscale=5) 
+            ax.legend(bbox_to_anchor=(1, 0.9), fontsize = (self.fontsize-4), markerscale=2.5) #, loc = 'upper left'
+            #ax.legend(loc = 'upper right', fontsize = (self.fontsize-4), markerscale=5) 
 
     def dqdv_cycle_comparison(self) -> np.array:
         """
@@ -528,7 +649,7 @@ class CapacityFadePlotting:
                     processed_df[cycle_columns[0]] = processed_df[cycle_columns[0]] - 5
                     
                     # Get the max discharge specific capacity for Cycle 1
-                    original_cycle_1_cap = processed_df[dchg_spec_cap_columns[0]].iloc[0]
+                    original_cycle_1_cap = processed_df[dchg_spec_cap_columns[0]].max() #.iloc[0] #max indicates normalized to 100% in plot
                     
                     # Calculate remaining capacity percentage
                     processed_df['Remaining Capacity (%)'] = (
