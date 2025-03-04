@@ -389,8 +389,8 @@ class XRDPlotter:
                 x = df.iloc[:, 0]
                 import pdb
                 #pdb.set_trace()
-                y_obs = self.transformation_y(df.iloc[:, 1]) + self.offsets[i]  # Apply offset to y-values
-                y_calc = self.transformation_y(df.iloc[:, 2]) + self.offsets[i] 
+                y_obs = self.transformation_y(df.iloc[:, 2]) + self.offsets[i]  # Apply offset to y-values
+                y_calc = self.transformation_y(df.iloc[:, 1]) + self.offsets[i] 
                 plt.scatter(x, y_obs, label="Observed " + self.legend_labels[i], color = "black", s=0.5)
                 plt.plot(x, y_calc, label="Calculated " + self.legend_labels[i], linewidth=1.5, color = palette[i])
         #TODO duplicate this function but for with ticks - use above for loop but add in function to search for files with ticks in their file name and create a separate offset function for ticks stacking at bottom of plot
@@ -401,7 +401,7 @@ class XRDPlotter:
         plt.xlabel(self.xlabel, fontsize=self.fontsize)
         plt.ylabel(self.ylabel, fontsize=self.fontsize)
         plt.gca().tick_params(axis='y', which='both', left=False, right=False)
-        plt.legend(bbox_to_anchor = (1, 1), ncol =2)
+        plt.legend(bbox_to_anchor = (1, 0.75), ncol =2, fontsize =14)
         plt.show()  
 
     def rietveld_difference_plot(self):
